@@ -2,7 +2,7 @@ package com.lihao.arcdemo;
 
 import android.os.Bundle;
 
-import com.lihao.arcdemo.presenter.DiariesPresenter;
+import com.lihao.arcdemo.viewmodels.DiariesViewModel;
 import com.lihao.arcdemo.utils.ActivityUtils;
 import com.lihao.arcdemo.views.DiariesFragment;
 
@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
             diariesFragment = new DiariesFragment();
             ActivityUtils.addFragmentToActivity(getSupportFragmentManager(), diariesFragment, R.id.content);
         }
-        diariesFragment.setPresenter(new DiariesPresenter(diariesFragment));
+        diariesFragment.setViewModel(new DiariesViewModel(diariesFragment));
     }
 
     private DiariesFragment getDiariesFragment() {

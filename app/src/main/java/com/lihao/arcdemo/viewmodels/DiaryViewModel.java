@@ -1,4 +1,4 @@
-package com.lihao.arcdemo.presenter;
+package com.lihao.arcdemo.viewmodels;
 
 import android.text.TextUtils;
 
@@ -6,37 +6,32 @@ import com.lihao.arcdemo.models.DataCallback;
 import com.lihao.arcdemo.models.DataSource;
 import com.lihao.arcdemo.models.DiariesRepository;
 import com.lihao.arcdemo.models.Diary;
+import com.lihao.arcdemo.views.DiaryEditFragment;
 
 import androidx.annotation.NonNull;
+import androidx.databinding.BaseObservable;
 
-public class DiaryEditPresenter implements DiaryEditContract.Presenter {
+public class DiaryViewModel extends BaseObservable {
 
     /** 数据源。 */
     private final DataSource<Diary> mDiariesRepository;
 
     /** 视图。 */
-    private final DiaryEditContract.View mView;
+    private final DiaryEditFragment mView;
 
     /** 日记ID。 */
     private String mDiaryId;
 
-    public DiaryEditPresenter(@NonNull String diaryId, @NonNull DiaryEditContract.View view) {
+    public DiaryViewModel(@NonNull String diaryId, @NonNull DiaryEditFragment view) {
         mDiariesRepository = DiariesRepository.getInstance();
         mView = view;
         mDiaryId = diaryId;
     }
 
-    @Override
     public void start() {
         requestDiary();
     }
 
-    @Override
-    public void destroy() {
-
-    }
-
-    @Override
     public void saveDiary(String title, String description) {
         if (isAddDiary()) {
             createDiary(title, description);
@@ -45,7 +40,6 @@ public class DiaryEditPresenter implements DiaryEditContract.Presenter {
         }
     }
 
-    @Override
     public void requestDiary() {
         if (isAddDiary()) {
             return;

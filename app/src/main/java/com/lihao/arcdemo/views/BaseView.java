@@ -1,15 +1,15 @@
 package com.lihao.arcdemo.views;
 
-import com.lihao.arcdemo.presenter.BasePresenter;
+import androidx.databinding.BaseObservable;
 
 /**
  * 基础视图标记。
  */
-public interface BaseView<T extends BasePresenter> {
+public interface BaseView<T extends BaseObservable> {
 
     /**
-     * 为View设置一个Presenter。
-     * @param presenter Presenter实例。
+     * 为View设置一个ViewModel。
+     * @param viewModel ViewModel实例。
      */
-    void setPresenter(T presenter);
+    void setViewModel(T viewModel);
 }

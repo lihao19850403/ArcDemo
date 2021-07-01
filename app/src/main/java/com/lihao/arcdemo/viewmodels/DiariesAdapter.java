@@ -1,4 +1,4 @@
-package com.lihao.arcdemo.presenter;
+package com.lihao.arcdemo.viewmodels;
 
 import android.view.View;
 import android.view.ViewGroup;

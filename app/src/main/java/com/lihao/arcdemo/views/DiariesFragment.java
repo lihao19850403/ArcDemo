@@ -10,102 +10,105 @@ import android.widget.Toast;
 
 import com.lihao.arcdemo.DiaryEditActivity;
 import com.lihao.arcdemo.R;
-import com.lihao.arcdemo.presenter.DiariesAdapter;
-import com.lihao.arcdemo.presenter.DiariesContract;
+import com.lihao.arcdemo.databinding.FragmentDiariesBinding;
+import com.lihao.arcdemo.viewmodels.DiariesAdapter;
+import com.lihao.arcdemo.viewmodels.DiariesViewModel;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.databinding.Observable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-public class DiariesFragment extends Fragment implements DiariesContract.View {
+public class DiariesFragment extends Fragment implements BaseView<DiariesViewModel> {
 
-    private DiariesContract.Presenter mPresenter;
+    private DiariesViewModel mViewModel;
 
-    private RecyclerView mRecyclerView;
+    private FragmentDiariesBinding mDiariesBinding;
 
     @Override
-    public void setPresenter(DiariesContract.Presenter presenter) {
-        mPresenter = presenter;
+    public void setViewModel(DiariesViewModel viewModel) {
+        mViewModel = viewModel;
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        initRecyclerView();
+        initToast();
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_diaries, container, false);
-        mRecyclerView = root.findViewById(R.id.diaries_list);
+        mDiariesBinding = FragmentDiariesBinding.inflate(inflater, container, false);
+        mDiariesBinding.setViewModel(mViewModel);
+        mDiariesBinding.setLayoutManager(new LinearLayoutManager(getContext()));
         initDiariesList();
+
         ImageView addDiaries = getActivity().findViewById(R.id.add_diaries);
-        addDiaries.setOnClickListener(v -> mPresenter.addDiary());
-        return root;
+        addDiaries.setOnClickListener(v -> mViewModel.addDiary());
+        return mDiariesBinding.getRoot();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        mPresenter.start();
+        mViewModel.start();
     }
 
-    @Override
-    public void onDestroy() {
-        mPresenter.destroy();
-        super.onDestroy();
-    }
-
-    @Override
     public void gotoWriteDiary() {
         Intent intent = new Intent(getContext(), DiaryEditActivity.class);
         getActivity().startActivityForResult(intent, 100);
     }
 
-    @Override
     public void gotoUpdateDiary(final String diaryId) {
         Intent intent = new Intent(getContext(), DiaryEditActivity.class);
         intent.putExtra(DiaryEditFragment.DIARY_ID, diaryId);
         getActivity().startActivityForResult(intent, 100);
     }
 
-    @Override
     public void showSuccess() {
         showMessage(getString(R.string.success));
     }
 
-    @Override
-    public void showError() {
-        showMessage(getString(R.string.error));
-    }
-
-    @Override
-    public boolean isActive() {
-        return isAdded();
-    }
-
-    @Override
     public void setListAdapter(DiariesAdapter diariesAdapter) {
-        mRecyclerView.setAdapter(diariesAdapter);
+        mDiariesBinding.diariesList.setAdapter(diariesAdapter);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        mPresenter.onResult(requestCode, resultCode);
+        mViewModel.onResult(requestCode, resultCode);
     }
 
     private void initDiariesList() {
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
-        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mDiariesBinding.diariesList.addItemDecoration(
+                new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
+        mDiariesBinding.diariesList.setItemAnimator(new DefaultItemAnimator());
     }
 
     private void showMessage(String message) {
         Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
+    private void initRecyclerView() {
+        mViewModel.listAdapter.addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
+            @Override
+            public void onPropertyChanged(Observable sender, int propertyId) {
+                setListAdapter(mViewModel.listAdapter.get());
+            }
+        });
+    }
+
+    private void initToast() {
+        mViewModel.toastInfo.addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
+            @Override
+            public void onPropertyChanged(Observable sender, int propertyId) {
+                showMessage(mViewModel.toastInfo.get());
+            }
+        });
     }
 }
