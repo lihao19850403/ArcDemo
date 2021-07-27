@@ -2,15 +2,18 @@ package com.lihao.arcdemo.models;
 
 import java.util.List;
 
+import androidx.annotation.NonNull;
+import io.reactivex.Flowable;
+
 public interface DataSource<T> {
 
-    public void getAll(DataCallback<List<T>> callback);
+    Flowable<List<Diary>> getAll();
 
-    public void get(String id, DataCallback<T> callback);
+    Flowable<Diary> get(@NonNull String id);
 
-    public void update(T diary);
+    public void update(@NonNull  T diary);
 
     public void clear();
 
-    public void delete(String id);
+    public void delete(@NonNull String id);
 }

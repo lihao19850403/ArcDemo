@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import androidx.annotation.NonNull;
+import io.reactivex.Flowable;
+
 public class DiariesLocalDataSource implements DataSource<Diary> {
 
     private static final String DIARY_DATA = "diary_data";
@@ -46,21 +49,19 @@ public class DiariesLocalDataSource implements DataSource<Diary> {
     }
 
     @Override
-    public void getAll(DataCallback<List<Diary>> callback) {
-        if (LOCAL_DATA.isEmpty()) {
-            callback.onError();
-        } else {
-            callback.onSuccess(new ArrayList<>(LOCAL_DATA.values()));
-        }
+    public Flowable<List<Diary>> getAll() {
+        return Flowable.fromIterable(LOCAL_DATA.values())
+                .toList()
+                .toFlowable();
     }
 
     @Override
-    public void get(String id, DataCallback<Diary> callback) {
+    public Flowable<Diary> get(@NonNull String id) {
         Diary diary = LOCAL_DATA.get(id);
         if (diary != null) {
-            callback.onSuccess(diary);
+            return Flowable.just(diary);
         } else {
-            callback.onError();
+            return Flowable.empty();
         }
     }
 

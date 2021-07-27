@@ -8,10 +8,10 @@ public interface BasePresenter {
     /**
      * 生命周期开始。
      */
-    void start();
+    void subscribe();
 
     /**
      * 生命周期结束。
      */
-    void destroy();
+    void unsubscribe();
 }

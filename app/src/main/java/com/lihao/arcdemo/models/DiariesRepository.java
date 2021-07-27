@@ -2,10 +2,13 @@ package com.lihao.arcdemo.models;
 
 import com.lihao.arcdemo.utils.CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import io.reactivex.Flowable;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.annotations.Nullable;
 
 public class DiariesRepository implements DataSource<Diary> {
 
@@ -32,48 +35,35 @@ public class DiariesRepository implements DataSource<Diary> {
     }
 
     @Override
-    public void getAll(final DataCallback<List<Diary>> callback) {
+    public Flowable<List<Diary>> getAll() {
         // 获取内存数据。
         if (!CollectionUtils.isEmpty(mMemoryCache)) {
-            callback.onSuccess(new ArrayList<>(mMemoryCache.values()));
-            return;
+            return Flowable.fromIterable(mMemoryCache.values())
+                    .toList()
+                    .toFlowable();
         }
         // 获取本地数据。
-        mLocalDataSource.getAll(new DataCallback<List<Diary>>() {
-            @Override
-            public void onSuccess(List<Diary> diaries) {
-                updateMemoryCache(diaries); // 更新缓存。
-                callback.onSuccess(new ArrayList<>(mMemoryCache.values()));
-            }
-
-            @Override
-            public void onError() {
-                callback.onError();
-            }
-        });
+        return mLocalDataSource.getAll()
+                .flatMap(diaries -> Flowable.fromIterable(diaries)
+                        .doOnNext(diary -> mMemoryCache.put(diary.getId(), diary))
+                        .toList()
+                        .toFlowable());
     }
 
     @Override
-    public void get(String id, final DataCallback<Diary> callback) {
+    public Flowable<Diary> get(@NonNull final String id) {
         // 获取内存数据。
         Diary cachedDiary = getDiaryByIdFromMemory(id);
         if (cachedDiary != null) {
-            callback.onSuccess(cachedDiary);
-            return;
+            return Flowable.just(cachedDiary);
         }
         // 获取本地数据。
-        mLocalDataSource.get(id, new DataCallback<Diary>() {
-            @Override
-            public void onSuccess(Diary diary) {
-                mMemoryCache.put(diary.getId(), diary); // 更新缓存。
-                callback.onSuccess(diary);
-            }
-
-            @Override
-            public void onError() {
-                callback.onError();
-            }
-        });
+        return mLocalDataSource.get(id)
+                .doOnNext(diary -> {
+                    if (diary != null) {
+                        mMemoryCache.put(diary.getId(), diary);
+                    }
+                });
     }
 
     @Override
@@ -101,7 +91,8 @@ public class DiariesRepository implements DataSource<Diary> {
         }
     }
 
-    private Diary getDiaryByIdFromMemory(String id) {
+    @Nullable
+    private Diary getDiaryByIdFromMemory(@NonNull String id) {
         if (CollectionUtils.isEmpty(mMemoryCache)) {
             return null;
         } else {

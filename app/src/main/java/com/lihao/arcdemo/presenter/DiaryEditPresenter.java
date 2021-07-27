@@ -2,14 +2,19 @@ package com.lihao.arcdemo.presenter;
 
 import android.text.TextUtils;
 
-import com.lihao.arcdemo.models.DataCallback;
 import com.lihao.arcdemo.models.DataSource;
 import com.lihao.arcdemo.models.DiariesRepository;
 import com.lihao.arcdemo.models.Diary;
 
 import androidx.annotation.NonNull;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class DiaryEditPresenter implements DiaryEditContract.Presenter {
+
+    private CompositeDisposable mCompositeDisposable;
 
     /** 数据源。 */
     private final DataSource<Diary> mDiariesRepository;
@@ -24,16 +29,17 @@ public class DiaryEditPresenter implements DiaryEditContract.Presenter {
         mDiariesRepository = DiariesRepository.getInstance();
         mView = view;
         mDiaryId = diaryId;
+        mCompositeDisposable = new CompositeDisposable();
     }
 
     @Override
-    public void start() {
+    public void subscribe() {
         requestDiary();
     }
 
     @Override
-    public void destroy() {
-
+    public void unsubscribe() {
+        mCompositeDisposable.clear();
     }
 
     @Override
@@ -50,24 +56,12 @@ public class DiaryEditPresenter implements DiaryEditContract.Presenter {
         if (isAddDiary()) {
             return;
         }
-        mDiariesRepository.get(mDiaryId, new DataCallback<Diary>() {
-            @Override
-            public void onSuccess(Diary diary) {
-                if (!mView.isActive()) {
-                    return;
-                }
-                mView.setTitle(diary.getTitle());
-                mView.setDescription(diary.getDescription());
-            }
-
-            @Override
-            public void onError() {
-                if (!mView.isActive()) {
-                    return;
-                }
-                mView.showError();
-            }
-        });
+        mCompositeDisposable.clear();
+        Disposable disposable = mDiariesRepository.get(mDiaryId)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::updateDiaryUI, error -> mView.showError());
+        mCompositeDisposable.add(disposable);
     }
 
     private boolean isAddDiary() {
@@ -84,5 +78,14 @@ public class DiaryEditPresenter implements DiaryEditContract.Presenter {
         Diary diary = new Diary(mDiaryId, title, description);
         mDiariesRepository.update(diary);
         mView.showDiariesList();
+    }
+
+    /**
+     * 更新日记页面数据。注：只更新UI。
+     * @param diary 包含新数据的diary实例。
+     */
+    private void updateDiaryUI(Diary diary) {
+        mView.setTitle(diary.getTitle());
+        mView.setDescription(diary.getDescription());
     }
 }
