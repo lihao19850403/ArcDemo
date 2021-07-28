@@ -13,6 +13,7 @@ import com.lihao.arcdemo.R;
 import com.lihao.arcdemo.databinding.FragmentDiariesBinding;
 import com.lihao.arcdemo.viewmodels.DiariesAdapter;
 import com.lihao.arcdemo.viewmodels.DiariesViewModel;
+import com.lihao.arcdemo.livedatas.ToastInfo;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -104,11 +105,6 @@ public class DiariesFragment extends Fragment implements BaseView<DiariesViewMod
     }
 
     private void initToast() {
-        mViewModel.toastInfo.addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
-            @Override
-            public void onPropertyChanged(Observable sender, int propertyId) {
-                showMessage(mViewModel.toastInfo.get());
-            }
-        });
+        mViewModel.getToastInfo().observe(this, (ToastInfo.ToastObserver) toastInfo -> showMessage(toastInfo));
     }
 }

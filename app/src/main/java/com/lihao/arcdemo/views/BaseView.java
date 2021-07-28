@@ -1,11 +1,11 @@
 package com.lihao.arcdemo.views;
 
-import androidx.databinding.BaseObservable;
+import androidx.lifecycle.ViewModel;
 
 /**
  * 基础视图标记。
  */
-public interface BaseView<T extends BaseObservable> {
+public interface BaseView<T extends ViewModel> {
 
     /**
      * 为View设置一个ViewModel。

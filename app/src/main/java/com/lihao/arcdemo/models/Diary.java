@@ -1,19 +1,28 @@
 package com.lihao.arcdemo.models;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
+import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
+
+@Entity(tableName = "diary")
 public class Diary {
 
+    @PrimaryKey
+    @NonNull
+    @ColumnInfo(name = "diaryId")
     private String mId;
 
+    @ColumnInfo(name = "title")
     private String mTitle;
 
+    @ColumnInfo(name = "desc")
     private String mDescription;
 
-    private List<Observer<Diary>> mObservers;
-
+    @Ignore
     public Diary(String title, String description) {
         this(UUID.randomUUID().toString(), title, description);
     }
@@ -24,6 +33,7 @@ public class Diary {
         mDescription = description;
     }
 
+    @NonNull
     public String getId() {
         return mId;
     }
@@ -38,28 +48,9 @@ public class Diary {
 
     public void setTitle(String title) {
         mTitle = title;
-        notifyObservers();
     }
 
     public void setDescription(String description) {
         mDescription = description;
-        notifyObservers();
-    }
-
-    public void registerObserver(Observer<Diary> observer) {
-        getObservers().add(observer);
-    }
-
-    public void notifyObservers() {
-        for (Observer<Diary> observer : getObservers()) {
-            observer.update(this);
-        }
-    }
-
-    private List<Observer<Diary>> getObservers() {
-        if (mObservers == null) {
-            mObservers = new ArrayList<>();
-        }
-        return mObservers;
     }
 }

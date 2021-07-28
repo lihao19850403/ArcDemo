@@ -7,6 +7,7 @@ import com.lihao.arcdemo.utils.ActivityUtils;
 import com.lihao.arcdemo.views.DiariesFragment;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProviders;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,7 +24,9 @@ public class MainActivity extends AppCompatActivity {
             diariesFragment = new DiariesFragment();
             ActivityUtils.addFragmentToActivity(getSupportFragmentManager(), diariesFragment, R.id.content);
         }
-        diariesFragment.setViewModel(new DiariesViewModel(diariesFragment));
+        DiariesViewModel diariesViewModel = ViewModelProviders.of(this).get(DiariesViewModel.class);
+        diariesViewModel.setView(diariesFragment);
+        diariesFragment.setViewModel(diariesViewModel);
     }
 
     private DiariesFragment getDiariesFragment() {

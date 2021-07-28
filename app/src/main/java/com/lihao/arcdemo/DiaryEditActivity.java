@@ -9,6 +9,7 @@ import com.lihao.arcdemo.utils.ActivityUtils;
 import com.lihao.arcdemo.views.DiaryEditFragment;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProviders;
 
 public class DiaryEditActivity extends AppCompatActivity {
 
@@ -32,7 +33,10 @@ public class DiaryEditActivity extends AppCompatActivity {
         if (addEditDiaryFragment == null) {
             addEditDiaryFragment = initEditDiaryFragment(diaryId);
         }
-        addEditDiaryFragment.setViewModel(new DiaryViewModel(diaryId, addEditDiaryFragment));
+        DiaryViewModel diaryViewModel = ViewModelProviders.of(this).get(DiaryViewModel.class);
+        diaryViewModel.setView(addEditDiaryFragment);
+        diaryViewModel.setDiaryId(diaryId);
+        addEditDiaryFragment.setViewModel(diaryViewModel);
     }
 
     private DiaryEditFragment getDiaryEditFragment() {

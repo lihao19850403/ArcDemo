@@ -1,9 +1,11 @@
 package com.lihao.arcdemo.viewmodels;
 
 import android.app.Activity;
+import android.app.Application;
 
 import com.lihao.arcdemo.MApplication;
 import com.lihao.arcdemo.R;
+import com.lihao.arcdemo.livedatas.ToastInfo;
 import com.lihao.arcdemo.models.DataCallback;
 import com.lihao.arcdemo.models.DiariesRepository;
 import com.lihao.arcdemo.models.Diary;
@@ -13,18 +15,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
-import androidx.databinding.BaseObservable;
 import androidx.databinding.ObservableArrayList;
 import androidx.databinding.ObservableField;
 import androidx.databinding.ObservableList;
+import androidx.lifecycle.AndroidViewModel;
 
 /**
  * 日记类ViewModel。
  */
-public class DiariesViewModel extends BaseObservable {
+public class DiariesViewModel extends AndroidViewModel {
 
     /** 日记列表视图。 */
-    private final DiariesFragment mView;
+    private DiariesFragment mView;
 
     /** 日记信息。 */
     private final DiariesRepository mDiariesRepository;
@@ -32,18 +34,22 @@ public class DiariesViewModel extends BaseObservable {
     /** 要操作的日记信息。 */
     private Diary mDiary;
 
+    /** Toast监听。 */
+    private final ToastInfo mToastInfo = new ToastInfo();
+
     /** 日记列表。 */
     public final ObservableList<Diary> data = new ObservableArrayList<>();
-
-    /** Toast监听。 */
-    public final ObservableField<String> toastInfo = new ObservableField<>();
 
     /** 日记Adapter。 */
     public final ObservableField<DiariesAdapter> listAdapter = new ObservableField<>();
 
-    public DiariesViewModel(@NonNull DiariesFragment iView) {
+    public DiariesViewModel(Application context) {
+        super(context);
         mDiariesRepository = DiariesRepository.getInstance();
-        mView = iView;
+    }
+
+    public void setView(DiariesFragment view) {
+        mView = view;
     }
 
     public void start() {
@@ -60,7 +66,7 @@ public class DiariesViewModel extends BaseObservable {
 
             @Override
             public void onError() {
-                toastInfo.set(MApplication.getInstance().getString(R.string.error));
+                mToastInfo.setValue(MApplication.getInstance().getString(R.string.error));
             }
         });
     }
@@ -85,6 +91,10 @@ public class DiariesViewModel extends BaseObservable {
             return;
         }
         mView.showSuccess();
+    }
+
+    public ToastInfo getToastInfo() {
+        return mToastInfo;
     }
 
     private void initAdapter() {

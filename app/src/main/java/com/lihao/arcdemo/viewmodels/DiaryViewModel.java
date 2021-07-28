@@ -1,5 +1,6 @@
 package com.lihao.arcdemo.viewmodels;
 
+import android.app.Application;
 import android.text.TextUtils;
 
 import com.lihao.arcdemo.models.DataCallback;
@@ -8,24 +9,22 @@ import com.lihao.arcdemo.models.DiariesRepository;
 import com.lihao.arcdemo.models.Diary;
 import com.lihao.arcdemo.views.DiaryEditFragment;
 
-import androidx.annotation.NonNull;
-import androidx.databinding.BaseObservable;
+import androidx.lifecycle.AndroidViewModel;
 
-public class DiaryViewModel extends BaseObservable {
+public class DiaryViewModel extends AndroidViewModel {
 
     /** 数据源。 */
     private final DataSource<Diary> mDiariesRepository;
 
     /** 视图。 */
-    private final DiaryEditFragment mView;
+    private DiaryEditFragment mView;
 
     /** 日记ID。 */
     private String mDiaryId;
 
-    public DiaryViewModel(@NonNull String diaryId, @NonNull DiaryEditFragment view) {
+    public DiaryViewModel(Application context) {
+        super(context);
         mDiariesRepository = DiariesRepository.getInstance();
-        mView = view;
-        mDiaryId = diaryId;
     }
 
     public void start() {
@@ -62,6 +61,14 @@ public class DiaryViewModel extends BaseObservable {
                 mView.showError();
             }
         });
+    }
+
+    public void setView(DiaryEditFragment view) {
+        mView = view;
+    }
+
+    public void setDiaryId(String diaryId) {
+        mDiaryId = diaryId;
     }
 
     private boolean isAddDiary() {

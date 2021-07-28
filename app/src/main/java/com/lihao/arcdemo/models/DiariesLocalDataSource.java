@@ -1,37 +1,30 @@
 package com.lihao.arcdemo.models;
 
+import com.lihao.arcdemo.db.DBManager;
+import com.lihao.arcdemo.db.daos.DiaryDao;
 import com.lihao.arcdemo.utils.CollectionUtils;
-import com.lihao.arcdemo.utils.GsonUtils;
-import com.lihao.arcdemo.utils.SharedPreferencesUtils;
+import com.lihao.arcdemo.utils.ThreadUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
+import androidx.annotation.NonNull;
 
 public class DiariesLocalDataSource implements DataSource<Diary> {
 
-    private static final String DIARY_DATA = "diary_data";
-
-    private static final String ALL_DIARY = "all_diary";
-
-    private static Map<String, Diary> LOCAL_DATA = new LinkedHashMap<>();
-
     private static volatile DiariesLocalDataSource mInstance;
 
-    private SharedPreferencesUtils mSpUtils;
+    private DiaryDao mDao;
+
+    private final Executor mIOThread;
 
     private DiariesLocalDataSource() {
-        mSpUtils = SharedPreferencesUtils.getInstance(DIARY_DATA);
-        String diaryStr = mSpUtils.get(ALL_DIARY); // 获取本地日记信息。
-        LinkedHashMap<String, Diary> diariesObj = json2Obj(diaryStr);
-        if (CollectionUtils.isEmpty(diariesObj)) {
-            LOCAL_DATA = MockDiaries.mock();
-        } else {
-            LOCAL_DATA = diariesObj;
-        }
+        mDao = DBManager.getInstance().diaryDao();
+        mIOThread = Executors.newSingleThreadExecutor();
+        mockData(); // 创建虚拟数据。
     }
 
     public static DiariesLocalDataSource get() {
@@ -47,65 +40,64 @@ public class DiariesLocalDataSource implements DataSource<Diary> {
 
     @Override
     public void getAll(DataCallback<List<Diary>> callback) {
-        if (LOCAL_DATA.isEmpty()) {
-            callback.onError();
-        } else {
-            callback.onSuccess(new ArrayList<>(LOCAL_DATA.values()));
-        }
+        mIOThread.execute(() -> notifyUIAfterGetAll(mDao.getAll(), callback));
     }
 
     @Override
     public void get(String id, DataCallback<Diary> callback) {
-        Diary diary = LOCAL_DATA.get(id);
-        if (diary != null) {
-            callback.onSuccess(diary);
-        } else {
-            callback.onError();
-        }
+        mIOThread.execute(() -> notifyUIAfterGet(mDao.get(id), callback));
     }
 
     @Override
-    public void update(Diary diary) {
-        LOCAL_DATA.put(diary.getId(), diary);
-        mSpUtils.put(ALL_DIARY, obj2Json());
+    public void update(@NonNull final Diary diary) {
+        mIOThread.execute(() -> {
+            int result = mDao.update(diary);
+            if (result == 0) {
+                mDao.add(diary);
+            }
+        });
     }
 
     @Override
     public void clear() {
-        LOCAL_DATA.clear();
-        mSpUtils.remove(ALL_DIARY);
+        mIOThread.execute(() -> mDao.deleteAll());
     }
 
     @Override
-    public void delete(String id) {
-        LOCAL_DATA.remove(id);
-        mSpUtils.put(ALL_DIARY, obj2Json());
+    public void delete(@NonNull final String id) {
+        mIOThread.execute(() -> mDao.delete(id));
     }
 
-    private String obj2Json() {
-        return GsonUtils.toJson(LOCAL_DATA);
-    }
-
-    private LinkedHashMap<String, Diary> json2Obj(String diaryStr) {
-        LinkedHashMap<String, Diary> result = new LinkedHashMap<>();
-        LinkedHashMap diaryMap = GsonUtils.fromJson(diaryStr, LinkedHashMap.class);
-        Set<String> ids = diaryMap == null ? new HashSet<>() : diaryMap.keySet();
-        for (String id : ids) {
-            Map diaryData = (Map) diaryMap.get(id);
-            String diaryId = (String) diaryData.get("mId");
-            String diaryTitle = (String) diaryData.get("mTitle");
-            String diaryDesc = (String) diaryData.get("mDescription");
-            Diary diary = new Diary(diaryId, diaryTitle, diaryDesc);
-            List diaryObservers = (ArrayList) diaryData.get("mObservers");
-            if (!CollectionUtils.isEmpty(diaryObservers)) {
-                for (Object observer : diaryObservers) {
-                    if (observer instanceof Observer) {
-                        diary.registerObserver((Observer<Diary>) observer);
-                    }
+    private void mockData() {
+        mIOThread.execute(() -> {
+            List<Diary> data = mDao.getAll();
+            if (CollectionUtils.isEmpty(data)) {
+                Map<String, Diary> mockData = MockDiaries.mock();
+                Iterator<Map.Entry<String, Diary>> iterator = mockData.entrySet().iterator();
+                while (iterator.hasNext()) {
+                    mDao.add(iterator.next().getValue());
                 }
             }
-            result.put(id, diary);
-        }
-        return result;
+        });
+    }
+
+    private void notifyUIAfterGetAll(final List<Diary> diaries, @NonNull final DataCallback<List<Diary>> callback) {
+        ThreadUtils.runOnUI(() -> {
+            if (diaries.isEmpty()) {
+                callback.onError();
+            } else {
+                callback.onSuccess(diaries);
+            }
+        });
+    }
+
+    private void notifyUIAfterGet(final Diary diary, @NonNull final DataCallback<Diary> callback) {
+        ThreadUtils.runOnUI(() -> {
+            if (diary != null) {
+                callback.onSuccess(diary);
+            } else {
+                callback.onError();
+            }
+        });
     }
 }
