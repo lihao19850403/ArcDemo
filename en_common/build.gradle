@@ -1,0 +1,19 @@
+apply from: "../build_config/base.gradle"
+
+dependencies {
+
+    api project(path: ':en_res')
+    api "com.alibaba:arouter-api:${libs.arouterApi}"
+    annotationProcessor "com.alibaba:arouter-compiler:${libs.arouterCompiler}"
+}
+
+android {
+
+    defaultConfig {
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [ AROUTER_MODULE_NAME: project.getName() ]
+            }
+        }
+    }
+}

@@ -1,0 +1,41 @@
+def androidConfig = rootProject.ext.androidConfig
+def libs = rootProject.ext.libs
+
+if (!getPlugins().hasPlugin("com.android.library") && !getPlugins().hasPlugin("com.android.application")) {
+    apply plugin: 'com.android.library'
+}
+
+android {
+    compileSdkVersion androidConfig.compileSdkVersion
+    buildToolsVersion androidConfig.buildToolsVersion
+
+    defaultConfig {
+        minSdkVersion androidConfig.minSdkVersion
+        targetSdkVersion androidConfig.targetSdkVersion
+        versionCode androidConfig.versionCode
+        versionName androidConfig.versionName
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.appcompat:appcompat:${libs.appcompat}"
+    implementation "com.google.android.material:material:${libs.material}"
+    testImplementation "junit:junit:${libs.junit}"
+    androidTestImplementation "androidx.test.ext:junit:${libs.ext_junit}"
+    androidTestImplementation "androidx.test.espresso:espresso-core:${libs.espresso_core}"
+}

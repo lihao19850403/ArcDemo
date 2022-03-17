@@ -1,0 +1,6 @@
+apply from: "../build_config/base.gradle"
+
+dependencies {
+
+    implementation "com.google.code.gson:gson:${libs.gson}"
+}

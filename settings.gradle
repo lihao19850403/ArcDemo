@@ -1,2 +1,7 @@
+include ':diary_list'
+include ':diary_edit'
+include ':en_res'
+include ':en_common'
+include ':en_base'
 include ':app'
 rootProject.name = "ArcDemo"
