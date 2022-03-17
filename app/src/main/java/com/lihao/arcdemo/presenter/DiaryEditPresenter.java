@@ -1,18 +1,14 @@
 package com.lihao.arcdemo.presenter;
 
-import android.text.TextUtils;
-
-import com.lihao.arcdemo.models.DataCallback;
-import com.lihao.arcdemo.models.DataSource;
 import com.lihao.arcdemo.models.DiariesRepository;
 import com.lihao.arcdemo.models.Diary;
+import com.lihao.arcdemo.usecases.GetDiaryUseCase;
+import com.lihao.arcdemo.usecases.UpdateDiaryUseCase;
+import com.lihao.arcdemo.usecases.UseCase;
 
 import androidx.annotation.NonNull;
 
 public class DiaryEditPresenter implements DiaryEditContract.Presenter {
-
-    /** 数据源。 */
-    private final DataSource<Diary> mDiariesRepository;
 
     /** 视图。 */
     private final DiaryEditContract.View mView;
@@ -20,8 +16,11 @@ public class DiaryEditPresenter implements DiaryEditContract.Presenter {
     /** 日记ID。 */
     private String mDiaryId;
 
+    private UpdateDiaryUseCase mUpdateDiaryUseCase = new UpdateDiaryUseCase();
+
+    private GetDiaryUseCase mGetDiaryUseCase = new GetDiaryUseCase();
+
     public DiaryEditPresenter(@NonNull String diaryId, @NonNull DiaryEditContract.View view) {
-        mDiariesRepository = DiariesRepository.getInstance();
         mView = view;
         mDiaryId = diaryId;
     }
@@ -38,51 +37,42 @@ public class DiaryEditPresenter implements DiaryEditContract.Presenter {
 
     @Override
     public void saveDiary(String title, String description) {
-        if (isAddDiary()) {
-            createDiary(title, description);
-        } else {
-            updateDiary(title, description);
-        }
+        mUpdateDiaryUseCase.setRequestValues(new UpdateDiaryUseCase.RequestValues(DiariesRepository.getInstance(), mDiaryId, title, description))
+                .setUseCaseCallback(new UseCase.UseCaseCallback<Void>() {
+                    @Override
+                    public void onSuccess(Void response) {
+                        mView.showDiariesList();
+                    }
+
+                    @Override
+                    public void onError() {
+
+                    }
+                })
+                .run();
     }
 
     @Override
     public void requestDiary() {
-        if (isAddDiary()) {
-            return;
-        }
-        mDiariesRepository.get(mDiaryId, new DataCallback<Diary>() {
-            @Override
-            public void onSuccess(Diary diary) {
-                if (!mView.isActive()) {
-                    return;
-                }
-                mView.setTitle(diary.getTitle());
-                mView.setDescription(diary.getDescription());
-            }
+        mGetDiaryUseCase.setRequestValues(new GetDiaryUseCase.RequestValues(mDiaryId, DiariesRepository.getInstance()))
+                .setUseCaseCallback(new UseCase.UseCaseCallback<Diary>() {
+                    @Override
+                    public void onSuccess(Diary diary) {
+                        if (!mView.isActive()) {
+                            return;
+                        }
+                        mView.setTitle(diary.getTitle());
+                        mView.setDescription(diary.getDescription());
+                    }
 
-            @Override
-            public void onError() {
-                if (!mView.isActive()) {
-                    return;
-                }
-                mView.showError();
-            }
-        });
-    }
-
-    private boolean isAddDiary() {
-        return TextUtils.isEmpty(mDiaryId);
-    }
-
-    private void createDiary(String title, String description) {
-        Diary newDiary = new Diary(title, description);
-        mDiariesRepository.update(newDiary);
-        mView.showDiariesList();
-    }
-
-    private void updateDiary(String title, String description) {
-        Diary diary = new Diary(mDiaryId, title, description);
-        mDiariesRepository.update(diary);
-        mView.showDiariesList();
+                    @Override
+                    public void onError() {
+                        if (!mView.isActive()) {
+                            return;
+                        }
+                        mView.showError();
+                    }
+                })
+                .run();
     }
 }

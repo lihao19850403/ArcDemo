@@ -2,9 +2,10 @@ package com.lihao.arcdemo.presenter;
 
 import android.app.Activity;
 
-import com.lihao.arcdemo.models.DataCallback;
 import com.lihao.arcdemo.models.DiariesRepository;
 import com.lihao.arcdemo.models.Diary;
+import com.lihao.arcdemo.usecases.GetAllDiariesUseCase;
+import com.lihao.arcdemo.usecases.UseCase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +20,8 @@ public class DiariesPresenter implements DiariesContract.Presenter {
     /** 日记列表视图。 */
     private final DiariesContract.View mView;
 
-    /** 日记信息。 */
-    private final DiariesRepository mDiariesRepository;
+    /** 日记仓库用例。 */
+    private final GetAllDiariesUseCase mGetAllDiariesUseCase = new GetAllDiariesUseCase();
 
     /** 列表适配器。 */
     private DiariesAdapter mListAdapter;
@@ -29,7 +30,6 @@ public class DiariesPresenter implements DiariesContract.Presenter {
     private Diary mDiary;
 
     public DiariesPresenter(@NonNull DiariesContract.View iView) {
-        mDiariesRepository = DiariesRepository.getInstance();
         mView = iView;
     }
 
@@ -46,23 +46,26 @@ public class DiariesPresenter implements DiariesContract.Presenter {
 
     @Override
     public void loadDiaries() {
-        mDiariesRepository.getAll(new DataCallback<List<Diary>>() {
-            @Override
-            public void onSuccess(List<Diary> diaries) {
-                if (!mView.isActive()) {
-                    return;
-                }
-                updateDiaries(diaries);
-            }
+        mGetAllDiariesUseCase.setRequestValues(DiariesRepository.getInstance())
+                .setUseCaseCallback(new UseCase.UseCaseCallback<List<Diary>>(){
 
-            @Override
-            public void onError() {
-                if (!mView.isActive()) {
-                    return;
-                }
-                mView.showError();
-            }
-        });
+                    @Override
+                    public void onSuccess(List<Diary> diaries) {
+                        if (!mView.isActive()) {
+                            return;
+                        }
+                        updateDiaries(diaries);
+                    }
+
+                    @Override
+                    public void onError() {
+                        if (!mView.isActive()) {
+                            return;
+                        }
+                        mView.showError();
+                    }
+                })
+                .run();
     }
 
     @Override
@@ -79,7 +82,7 @@ public class DiariesPresenter implements DiariesContract.Presenter {
     @Override
     public void onInputDialogClick(String desc) {
         mDiary.setDescription(desc);
-        mDiariesRepository.update(mDiary);
+        DiariesRepository.getInstance().update(mDiary);
         loadDiaries();
     }
 
@@ -101,9 +104,6 @@ public class DiariesPresenter implements DiariesContract.Presenter {
     }
 
     private void updateDiaries(List<Diary> diaries) {
-//        for (Diary diary : diaries) {
-//            diary.registerObserver(this);
-//        }
         mListAdapter.update(diaries);
     }
 }
