@@ -69,7 +69,7 @@ public interface DiariesContract {
         void showError();
 
         /**
-         * 判断Fragment是否已加入Activity。
+         * 判断View是否已加入Activity。
          * @return 判断结果。
          */
         boolean isActive();

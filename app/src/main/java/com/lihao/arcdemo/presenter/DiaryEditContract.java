@@ -31,7 +31,7 @@ public interface DiaryEditContract {
     interface View extends BaseView<Presenter> {
 
         /**
-         * 判断Fragment是否已加入Activity中。
+         * 判断View是否已加入Activity中。
          * @return 判断结果。
          */
         boolean isActive();
