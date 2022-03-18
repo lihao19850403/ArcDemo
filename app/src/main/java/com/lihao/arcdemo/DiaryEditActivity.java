@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.TextView;
 
+import com.lihao.arcdemo.interactors.DiariesEditInteractor;
 import com.lihao.arcdemo.presenter.DiaryEditPresenter;
 import com.lihao.arcdemo.utils.ActivityUtils;
 import com.lihao.arcdemo.views.DiaryEditFragment;
@@ -32,7 +33,7 @@ public class DiaryEditActivity extends AppCompatActivity {
         if (addEditDiaryFragment == null) {
             addEditDiaryFragment = initEditDiaryFragment(diaryId);
         }
-        DiaryEditPresenter diaryEditPresenter = new DiaryEditPresenter(diaryId, addEditDiaryFragment);
+        DiaryEditPresenter diaryEditPresenter = new DiaryEditPresenter(diaryId, addEditDiaryFragment, new DiariesEditInteractor());
         addEditDiaryFragment.setPresenter(diaryEditPresenter);
     }
 

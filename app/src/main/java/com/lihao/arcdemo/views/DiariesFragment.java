@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.lihao.arcdemo.DiaryEditActivity;
 import com.lihao.arcdemo.R;
 import com.lihao.arcdemo.presenter.DiariesAdapter;
 import com.lihao.arcdemo.presenter.DiariesContract;
@@ -58,19 +57,6 @@ public class DiariesFragment extends Fragment implements DiariesContract.View {
     public void onDestroy() {
         mPresenter.destroy();
         super.onDestroy();
-    }
-
-    @Override
-    public void gotoWriteDiary() {
-        Intent intent = new Intent(getContext(), DiaryEditActivity.class);
-        getActivity().startActivityForResult(intent, 100);
-    }
-
-    @Override
-    public void gotoUpdateDiary(final String diaryId) {
-        Intent intent = new Intent(getContext(), DiaryEditActivity.class);
-        intent.putExtra(DiaryEditFragment.DIARY_ID, diaryId);
-        getActivity().startActivityForResult(intent, 100);
     }
 
     @Override

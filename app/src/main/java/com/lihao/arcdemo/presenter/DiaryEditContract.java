@@ -1,5 +1,8 @@
 package com.lihao.arcdemo.presenter;
 
+import com.lihao.arcdemo.interactors.BaseInteractor;
+import com.lihao.arcdemo.usecases.GetDiaryUseCase;
+import com.lihao.arcdemo.usecases.UpdateDiaryUseCase;
 import com.lihao.arcdemo.views.BaseView;
 
 /**
@@ -57,5 +60,12 @@ public interface DiaryEditContract {
          * 显示日记列表。
          */
         void showDiariesList();
+    }
+
+    interface Interactor extends BaseInteractor {
+
+        UpdateDiaryUseCase updateDiary();
+
+        GetDiaryUseCase getDiary();
     }
 }

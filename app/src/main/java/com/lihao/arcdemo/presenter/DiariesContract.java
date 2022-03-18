@@ -1,6 +1,9 @@
 package com.lihao.arcdemo.presenter;
 
+import com.lihao.arcdemo.interactors.BaseInteractor;
 import com.lihao.arcdemo.models.Diary;
+import com.lihao.arcdemo.routers.BaseRouter;
+import com.lihao.arcdemo.usecases.GetAllDiariesUseCase;
 import com.lihao.arcdemo.views.BaseView;
 
 import androidx.annotation.NonNull;
@@ -48,17 +51,6 @@ public interface DiariesContract {
     interface View extends BaseView<Presenter> {
 
         /**
-         * 写日记。
-         */
-        void gotoWriteDiary();
-
-        /**
-         * 显示日记编辑页。
-         * @param diaryId 日记ID。
-         */
-        void gotoUpdateDiary(String diaryId);
-
-        /**
          * 显示成功信息。
          */
         void showSuccess();
@@ -79,5 +71,17 @@ public interface DiariesContract {
          * @param diariesAdapter 待设置的适配器。
          */
         void setListAdapter(DiariesAdapter diariesAdapter);
+    }
+
+    interface Interactor extends BaseInteractor {
+
+        GetAllDiariesUseCase getAll();
+    }
+
+    interface Router extends BaseRouter {
+
+        void gotoWriteDiary();
+
+        void gotoUpdateDiary(String diaryId);
     }
 }

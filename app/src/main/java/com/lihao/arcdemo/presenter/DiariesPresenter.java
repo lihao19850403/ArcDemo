@@ -4,7 +4,6 @@ import android.app.Activity;
 
 import com.lihao.arcdemo.models.DiariesRepository;
 import com.lihao.arcdemo.models.Diary;
-import com.lihao.arcdemo.usecases.GetAllDiariesUseCase;
 import com.lihao.arcdemo.usecases.UseCase;
 
 import java.util.ArrayList;
@@ -20,8 +19,9 @@ public class DiariesPresenter implements DiariesContract.Presenter {
     /** 日记列表视图。 */
     private final DiariesContract.View mView;
 
-    /** 日记仓库用例。 */
-    private final GetAllDiariesUseCase mGetAllDiariesUseCase = new GetAllDiariesUseCase();
+    private DiariesContract.Interactor mInteractor;
+
+    private DiariesContract.Router mRouter;
 
     /** 列表适配器。 */
     private DiariesAdapter mListAdapter;
@@ -29,8 +29,10 @@ public class DiariesPresenter implements DiariesContract.Presenter {
     /** 要操作的日记信息。 */
     private Diary mDiary;
 
-    public DiariesPresenter(@NonNull DiariesContract.View iView) {
+    public DiariesPresenter(@NonNull DiariesContract.View iView, DiariesContract.Interactor interactor, DiariesContract.Router router) {
         mView = iView;
+        mInteractor = interactor;
+        mRouter = router;
     }
 
     @Override
@@ -46,7 +48,7 @@ public class DiariesPresenter implements DiariesContract.Presenter {
 
     @Override
     public void loadDiaries() {
-        mGetAllDiariesUseCase.setRequestValues(DiariesRepository.getInstance())
+        mInteractor.getAll().setRequestValues(DiariesRepository.getInstance())
                 .setUseCaseCallback(new UseCase.UseCaseCallback<List<Diary>>(){
 
                     @Override
@@ -70,13 +72,13 @@ public class DiariesPresenter implements DiariesContract.Presenter {
 
     @Override
     public void addDiary() {
-        mView.gotoWriteDiary();
+        mRouter.gotoWriteDiary();
     }
 
     @Override
     public void updateDiary(@NonNull Diary diary) {
         mDiary = diary;
-        mView.gotoUpdateDiary(diary.getId());
+        mRouter.gotoUpdateDiary(diary.getId());
     }
 
     @Override

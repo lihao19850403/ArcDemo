@@ -1,5 +1,6 @@
 package com.lihao.arcdemo.presenter;
 
+import com.lihao.arcdemo.interactors.DiariesEditInteractor;
 import com.lihao.arcdemo.models.DiariesRepository;
 import com.lihao.arcdemo.models.Diary;
 import com.lihao.arcdemo.usecases.GetDiaryUseCase;
@@ -16,13 +17,12 @@ public class DiaryEditPresenter implements DiaryEditContract.Presenter {
     /** 日记ID。 */
     private String mDiaryId;
 
-    private UpdateDiaryUseCase mUpdateDiaryUseCase = new UpdateDiaryUseCase();
+    private DiariesEditInteractor mInteractor;
 
-    private GetDiaryUseCase mGetDiaryUseCase = new GetDiaryUseCase();
-
-    public DiaryEditPresenter(@NonNull String diaryId, @NonNull DiaryEditContract.View view) {
+    public DiaryEditPresenter(@NonNull String diaryId, @NonNull DiaryEditContract.View view, DiariesEditInteractor interactor) {
         mView = view;
         mDiaryId = diaryId;
+        mInteractor = interactor;
     }
 
     @Override
@@ -37,7 +37,7 @@ public class DiaryEditPresenter implements DiaryEditContract.Presenter {
 
     @Override
     public void saveDiary(String title, String description) {
-        mUpdateDiaryUseCase.setRequestValues(new UpdateDiaryUseCase.RequestValues(DiariesRepository.getInstance(), mDiaryId, title, description))
+        mInteractor.updateDiary().setRequestValues(new UpdateDiaryUseCase.RequestValues(DiariesRepository.getInstance(), mDiaryId, title, description))
                 .setUseCaseCallback(new UseCase.UseCaseCallback<Void>() {
                     @Override
                     public void onSuccess(Void response) {
@@ -54,7 +54,7 @@ public class DiaryEditPresenter implements DiaryEditContract.Presenter {
 
     @Override
     public void requestDiary() {
-        mGetDiaryUseCase.setRequestValues(new GetDiaryUseCase.RequestValues(mDiaryId, DiariesRepository.getInstance()))
+        mInteractor.getDiary().setRequestValues(new GetDiaryUseCase.RequestValues(mDiaryId, DiariesRepository.getInstance()))
                 .setUseCaseCallback(new UseCase.UseCaseCallback<Diary>() {
                     @Override
                     public void onSuccess(Diary diary) {
