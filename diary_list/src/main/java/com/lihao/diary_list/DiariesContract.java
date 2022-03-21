@@ -2,7 +2,10 @@ package com.lihao.diary_list;
 
 
 import com.lihao.diary_list.list.DiariesAdapter;
+import com.lihao.diary_list.usecases.GetAllDiariesUseCase;
+import com.lihao.en_base.base.BaseInteractor;
 import com.lihao.en_base.base.BasePresenter;
+import com.lihao.en_base.base.BaseRouter;
 import com.lihao.en_base.base.BaseView;
 import com.lihao.en_common.model.Diary;
 
@@ -51,17 +54,6 @@ public interface DiariesContract {
     interface View extends BaseView<Presenter> {
 
         /**
-         * 写日记。
-         */
-        void gotoWriteDiary();
-
-        /**
-         * 显示日记编辑页。
-         * @param diaryId 日记ID。
-         */
-        void gotoUpdateDiary(String diaryId);
-
-        /**
          * 显示成功信息。
          */
         void showSuccess();
@@ -83,4 +75,17 @@ public interface DiariesContract {
          */
         void setListAdapter(DiariesAdapter diariesAdapter);
     }
+
+    interface Interactor extends BaseInteractor {
+
+        GetAllDiariesUseCase getAll();
+    }
+
+    interface Router extends BaseRouter {
+
+        void gotoWriteDiary();
+
+        void gotoUpdateDiary(String diaryId);
+    }
+
 }

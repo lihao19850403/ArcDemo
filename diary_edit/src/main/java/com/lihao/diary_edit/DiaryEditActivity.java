@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import android.widget.TextView;
 
 import com.alibaba.android.arouter.facade.annotation.Route;
+import com.lihao.diary_edit.interactors.DiariesEditInteractor;
 import com.lihao.en_base.utils.ActivityUtils;
 import com.lihao.en_common.router.RouterPath;
 
@@ -33,7 +34,7 @@ public class DiaryEditActivity extends AppCompatActivity {
         if (addEditDiaryFragment == null) {
             addEditDiaryFragment = initEditDiaryFragment(diaryId);
         }
-        DiaryEditPresenter diaryEditPresenter = new DiaryEditPresenter(diaryId, addEditDiaryFragment);
+        DiaryEditPresenter diaryEditPresenter = new DiaryEditPresenter(diaryId, addEditDiaryFragment, new DiariesEditInteractor());
         addEditDiaryFragment.setPresenter(diaryEditPresenter);
     }
 

@@ -1,5 +1,8 @@
 package com.lihao.diary_edit;
 
+import com.lihao.diary_edit.usecases.GetDiaryUseCase;
+import com.lihao.diary_edit.usecases.UpdateDiaryUseCase;
+import com.lihao.en_base.base.BaseInteractor;
 import com.lihao.en_base.base.BasePresenter;
 import com.lihao.en_base.base.BaseView;
 
@@ -58,5 +61,12 @@ public interface DiaryEditContract {
          * 显示日记列表。
          */
         void showDiariesList();
+    }
+
+    interface Interactor extends BaseInteractor {
+
+        UpdateDiaryUseCase updateDiary();
+
+        GetDiaryUseCase getDiary();
     }
 }

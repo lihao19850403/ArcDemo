@@ -1,18 +1,15 @@
 package com.lihao.diary_edit;
 
-import android.text.TextUtils;
-
+import com.lihao.diary_edit.interactors.DiariesEditInteractor;
+import com.lihao.diary_edit.usecases.GetDiaryUseCase;
+import com.lihao.diary_edit.usecases.UpdateDiaryUseCase;
 import com.lihao.en_common.data.DiariesRepository;
 import com.lihao.en_common.model.Diary;
-import com.lihao.en_common.source.DataCallback;
-import com.lihao.en_common.source.DataSource;
+import com.lihao.en_common.usecase.UseCase;
 
 import androidx.annotation.NonNull;
 
 public class DiaryEditPresenter implements DiaryEditContract.Presenter {
-
-    /** 数据源。 */
-    private final DataSource<Diary> mDiariesRepository;
 
     /** 视图。 */
     private final DiaryEditContract.View mView;
@@ -20,10 +17,12 @@ public class DiaryEditPresenter implements DiaryEditContract.Presenter {
     /** 日记ID。 */
     private String mDiaryId;
 
-    public DiaryEditPresenter(@NonNull String diaryId, @NonNull DiaryEditContract.View view) {
-        mDiariesRepository = DiariesRepository.getInstance();
+    private DiariesEditInteractor mInteractor;
+
+    public DiaryEditPresenter(@NonNull String diaryId, @NonNull DiaryEditContract.View view, DiariesEditInteractor interactor) {
         mView = view;
         mDiaryId = diaryId;
+        mInteractor = interactor;
     }
 
     @Override
@@ -38,51 +37,44 @@ public class DiaryEditPresenter implements DiaryEditContract.Presenter {
 
     @Override
     public void saveDiary(String title, String description) {
-        if (isAddDiary()) {
-            createDiary(title, description);
-        } else {
-            updateDiary(title, description);
-        }
+        mInteractor.updateDiary().setRequestValues(new UpdateDiaryUseCase.RequestValues(DiariesRepository.getInstance(), mDiaryId, title, description))
+                .setUseCaseCallback(new UseCase.UseCaseCallback<Void>() {
+
+                    @Override
+                    public void onSuccess(Void response) {
+                        mView.showDiariesList();
+                    }
+
+                    @Override
+                    public void onError() {
+
+                    }
+                })
+                .run();
     }
 
     @Override
     public void requestDiary() {
-        if (isAddDiary()) {
-            return;
-        }
-        mDiariesRepository.get(mDiaryId, new DataCallback<Diary>() {
-            @Override
-            public void onSuccess(Diary diary) {
-                if (!mView.isActive()) {
-                    return;
-                }
-                mView.setTitle(diary.getTitle());
-                mView.setDescription(diary.getDescription());
-            }
+        mInteractor.getDiary().setRequestValues(new GetDiaryUseCase.RequestValues(mDiaryId, DiariesRepository.getInstance()))
+                .setUseCaseCallback(new UseCase.UseCaseCallback<Diary>(){
 
-            @Override
-            public void onError() {
-                if (!mView.isActive()) {
-                    return;
-                }
-                mView.showError();
-            }
-        });
-    }
+                    @Override
+                    public void onSuccess(Diary diary) {
+                        if (!mView.isActive()) {
+                            return;
+                        }
+                        mView.setTitle(diary.getTitle());
+                        mView.setDescription(diary.getDescription());
+                    }
 
-    private boolean isAddDiary() {
-        return TextUtils.isEmpty(mDiaryId);
-    }
-
-    private void createDiary(String title, String description) {
-        Diary newDiary = new Diary(title, description);
-        mDiariesRepository.update(newDiary);
-        mView.showDiariesList();
-    }
-
-    private void updateDiary(String title, String description) {
-        Diary diary = new Diary(mDiaryId, title, description);
-        mDiariesRepository.update(diary);
-        mView.showDiariesList();
+                    @Override
+                    public void onError() {
+                        if (!mView.isActive()) {
+                            return;
+                        }
+                        mView.showError();
+                    }
+                })
+                .run();
     }
 }

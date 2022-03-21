@@ -3,6 +3,8 @@ package com.lihao.diary_list;
 import android.os.Bundle;
 
 import com.alibaba.android.arouter.facade.annotation.Route;
+import com.lihao.diary_list.interactors.DiariesInteractor;
+import com.lihao.diary_list.routers.DiariesRouter;
 import com.lihao.en_base.utils.ActivityUtils;
 import com.lihao.en_common.router.RouterPath;
 
@@ -24,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
             diariesFragment = new DiariesFragment();
             ActivityUtils.addFragmentToActivity(getSupportFragmentManager(), diariesFragment, R.id.content);
         }
-        diariesFragment.setPresenter(new DiariesPresenter(diariesFragment));
+        diariesFragment.setPresenter(new DiariesPresenter(diariesFragment, new DiariesInteractor(), new DiariesRouter(this)));
     }
 
     private DiariesFragment getDiariesFragment() {

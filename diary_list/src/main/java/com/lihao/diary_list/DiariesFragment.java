@@ -8,9 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.alibaba.android.arouter.launcher.ARouter;
 import com.lihao.diary_list.list.DiariesAdapter;
-import com.lihao.en_common.router.RouterPath;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -57,22 +55,6 @@ public class DiariesFragment extends Fragment implements DiariesContract.View {
     public void onDestroy() {
         mPresenter.destroy();
         super.onDestroy();
-    }
-
-    @Override
-    public void gotoWriteDiary() {
-        ARouter.getInstance()
-                .build(RouterPath.Edit.PAGER_EDIT_DIARY)
-                .navigation(getActivity(), 100);
-    }
-
-    @Override
-    public void gotoUpdateDiary(final String diaryId) {
-        ARouter.getInstance()
-                .build(RouterPath.Edit.PAGER_EDIT_DIARY)
-                .withString("DIARY_ID", diaryId)
-                .navigation(getActivity(), 100);
-
     }
 
     @Override
