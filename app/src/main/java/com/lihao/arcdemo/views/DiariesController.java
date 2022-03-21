@@ -1,27 +1,28 @@
 package com.lihao.arcdemo.views;
 
 import android.content.Intent;
-import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import com.lihao.arcdemo.DiaryEditActivity;
+import com.bluelinelabs.conductor.RouterTransaction;
 import com.lihao.arcdemo.R;
+import com.lihao.arcdemo.controllers.BaseController;
 import com.lihao.arcdemo.presenter.DiariesAdapter;
 import com.lihao.arcdemo.presenter.DiariesContract;
+import com.lihao.arcdemo.presenter.DiaryEditPresenter;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class DiariesFragment extends Fragment implements DiariesContract.View {
+public class DiariesController extends BaseController implements DiariesContract.View {
 
     private DiariesContract.Presenter mPresenter;
 
@@ -32,25 +33,23 @@ public class DiariesFragment extends Fragment implements DiariesContract.View {
         mPresenter = presenter;
     }
 
+    @NonNull
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_diaries, container, false);
+    protected View onCreateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
+        View root = inflater.inflate(R.layout.controller_diaries, container, false);
         mRecyclerView = root.findViewById(R.id.diaries_list);
         initDiariesList();
-        ImageView addDiaries = getActivity().findViewById(R.id.add_diaries);
+        ImageView addDiaries = getActivity().findViewById(R.id.control_diaries);
         addDiaries.setOnClickListener(v -> mPresenter.addDiary());
+        setActive(true);
+        ((TextView) getActivity().findViewById(R.id.toolbar_title)).setText(R.string.app_name);
+        ((ImageView) getActivity().findViewById(R.id.control_diaries)).setImageResource(android.R.drawable.ic_input_add);
         return root;
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    protected void onAttach(@NonNull View view) {
+        super.onAttach(view);
         mPresenter.start();
     }
 
@@ -62,30 +61,28 @@ public class DiariesFragment extends Fragment implements DiariesContract.View {
 
     @Override
     public void gotoWriteDiary() {
-        Intent intent = new Intent(getContext(), DiaryEditActivity.class);
-        getActivity().startActivityForResult(intent, 100);
+        DiaryEditController diaryEditController = new DiaryEditController("");
+        diaryEditController.setTargetController(this);
+        diaryEditController.setPresenter(new DiaryEditPresenter("", diaryEditController));
+        getRouter().pushController(RouterTransaction.with(diaryEditController));
     }
 
     @Override
     public void gotoUpdateDiary(final String diaryId) {
-        Intent intent = new Intent(getContext(), DiaryEditActivity.class);
-        intent.putExtra(DiaryEditFragment.DIARY_ID, diaryId);
-        getActivity().startActivityForResult(intent, 100);
+        DiaryEditController diaryEditController = new DiaryEditController(diaryId);
+        diaryEditController.setTargetController(this);
+        diaryEditController.setPresenter(new DiaryEditPresenter(diaryId, diaryEditController));
+        getRouter().pushController(RouterTransaction.with(diaryEditController));
     }
 
     @Override
     public void showSuccess() {
-        showMessage(getString(R.string.success));
+        showMessage(getResources().getString(R.string.success));
     }
 
     @Override
     public void showError() {
-        showMessage(getString(R.string.error));
-    }
-
-    @Override
-    public boolean isActive() {
-        return isAdded();
+        showMessage(getResources().getString(R.string.error));
     }
 
     @Override
@@ -100,12 +97,12 @@ public class DiariesFragment extends Fragment implements DiariesContract.View {
     }
 
     private void initDiariesList() {
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
     }
 
     private void showMessage(String message) {
-        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
     }
 }
